@@ -1,0 +1,17 @@
+{% extends 'base.twig' %}
+{% block body %}
+    <div class="container">
+        {%  if post.img_path != ''%}
+            <img src="{{ post.img_path }}" class="card-img-top" alt="{{ post.title|escape }}">
+        {% else %}
+            <img src="img/les.jpg" class="card-img-top" alt="{{ post.title|escape }}">
+        {% endif %}
+        <h1 class="mt-5 mb-2"> {{ post.title|escape}}</h1>
+        <div class="row">
+            <span class="text-muted"> Tern | {{ post.published_date|date("F d ,Y")}} </span>
+        </div>
+        <div class="row">
+            {{ post.content|raw}}
+        </div>
+    </div>
+{% endblock %}
