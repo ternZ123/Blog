@@ -4,22 +4,20 @@ declare(strict_types=1);
 namespace Blog;
 
 use Exception;
-use PDO;
 
 class PostMapper
 {
     /**
-     * @var PDO
+     *
      */
-    //private PDO $connection;
+    //private Database $database;
 
     /**
-     * PostMapper constructor.
-     * @param PDO $connection
+     * @param Database $database
      */
-    public function __construct(PDO $connection)
+    public function __construct(Database $database)
     {
-        $this->connection=$connection;
+        $this->database=$database;
     }
 
     /**
@@ -28,7 +26,7 @@ class PostMapper
      */
     public function getByUrlKey(string $urlkey):?array
     {
-        $statement=$this->connection->prepare('SELECT * FROM post WHERE url_key =:url_key');
+        $statement=$this->database->getConnection()->prepare('SELECT * FROM post WHERE url_key =:url_key');
         $statement->execute([
             'url_key'=>$urlkey
         ]);
@@ -37,19 +35,33 @@ class PostMapper
     }
 
     /**
+     * @param int $page
+     * @param int $limit
      * @param string $direction
      * @return array|null
      * @throws Exception
      */
-    public function getList(string $direction):?array
+    public function getList(int $page=1,int $limit=2, string $direction='ASC'):?array
     {
         if(!in_array($direction,['ASC','DESC'])){
           throw new Exception('The direction in not supported');
+
         }
-        $statement=$this->connection->prepare('SELECT * FROM post ORDER BY published_date '.$direction);
+        $start=($page-1) * $limit;
+
+        $statement=$this->database->getConnection()->prepare(
+            'SELECT * FROM post ORDER BY published_date '.$direction.' LIMIT '.$start . ',' . $limit);
 
         $statement->execute();
         return $statement->fetchAll();
     }
 
+    public function getTotalCount():int
+    {
+        $statement=$this->database->getConnection()->prepare('SELECT count(post_id) as total FROM post');
+        $statement->execute();
+
+        return (int)($statement->fetchColumn()?? 0);
+
+    }
 }
